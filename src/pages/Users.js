@@ -1,0 +1,12 @@
+import React from 'react';
+
+const Users = () => {
+  return (
+    <div>
+      <h1>Users Page</h1>
+      {/* Your Users page content */}
+    </div>
+  );
+};
+
+export default Users;
