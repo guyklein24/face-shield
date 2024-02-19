@@ -6,10 +6,13 @@ import Alerts from './pages/Alerts';
 import Watchlist from './pages/Watchlist';
 import Camera from './pages/Cameras';
 import Users from './pages/Users';
+import Menu from './components/Menu';
+
 
 function App() {
   return (
     <Router>
+      <Menu />
       <Routes>
         <Route path="/" exact element={<Alerts />} />
         <Route path="/watchlist" element={<Watchlist />} />
