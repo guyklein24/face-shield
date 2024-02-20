@@ -7,7 +7,8 @@ const { deleteSubjectFile, writeSubjectEncodingToFile, writeSubjectImageToFile }
 
 let mainWindow;
 
-function createWindow() {
+// Function to create the main window
+function createMainWindow() {
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 1000,
@@ -19,8 +20,8 @@ function createWindow() {
 
   mainWindow.loadURL(
     isDev
-      ? 'http://localhost:3000' // Development server URL
-      : `file://${path.join(__dirname, '../build/index.html')}` // Build output path
+      ? 'http://localhost:8080' // Development server URL
+      : `file://${path.join(__dirname, '../build/index.html')}`
   );
 
   mainWindow.on('closed', () => {
@@ -49,8 +50,7 @@ app.whenReady().then(async () => {
   }
 });
 
-app.whenReady().then(createWindow);
-
+// Quit when all windows are closed, except on macOS
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
