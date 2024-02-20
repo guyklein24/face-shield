@@ -1,6 +1,8 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const isDev = require('electron-is-dev');
+const { fetchSubjects, updateAllCamerasStates, fetchUsers, createSubject, deleteSubject, createAlert} = require('./src/utils/api');
+const { deleteSubjectFile, writeSubjectEncodingToFile, writeSubjectImageToFile } = require('./src/utils/fileOperations')
 
 let mainWindow;
 
@@ -40,6 +42,71 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
   }
+});
+
+
+// IPC event handler to add a new subject
+ipcMain.handle('add-subject', async (event, newSubject) => {
+  return new Promise((resolve, reject) => {
+    let createdSubject;
+
+    try {
+      // Handle the script output and create a file
+      const spawn = require('child_process').spawn;
+      const pythonScriptPath = path.join(__dirname, 'python', 'add_subject.py');
+      const pythonArgs = ['-u', pythonScriptPath, '--image-path', newSubject.imagePath];
+      console.log('Python Args:', pythonArgs);
+      const pythonProcess = spawn('python3', pythonArgs);
+
+      let scriptOutput = '';
+
+      // Listen for data from the Python script's stdout
+      pythonProcess.stdout.on('data', (data) => {
+        scriptOutput += data.toString();
+      });
+
+      // Handle script exit
+      pythonProcess.on('close', async (code) => {
+        if (code === 0) {
+          // Parse the script output to get subject name and encodings
+          const subjectEncoding = JSON.parse(scriptOutput);
+
+          // Create the subject
+          createdSubject = await createSubject({
+            name: newSubject.name,
+            description: newSubject.description,
+            faceEncoding: subjectEncoding.encoding,
+          });
+
+          // Write subject encoding data to file
+          writeSubjectEncoding(createdSubject);
+          
+          console.log('Subject created:', createdSubject);
+          
+          resolve(createdSubject); // Resolve the promise with the createdSubject
+        } else {
+          console.error('Python script execution failed with code:', code);
+          reject(new Error(`Python script execution failed with code: ${code}`));
+        }
+      });
+
+      // Handle errors
+      pythonProcess.on('error', (err) => {
+        console.error('Error executing Python script:', err);
+        reject(err);
+      });
+
+    } catch (error) {
+      console.error('Error adding subject:', error);
+      reject(error);
+    }
+  });
+});
+
+
+// IPC event handler to upload an image
+ipcMain.handle('upload-image', async (event, base64image, subjectName) => {
+  await writeSubjectImageToFile(base64image, subjectName);
 });
 
 // IPC event handler to start a camera
@@ -85,6 +152,15 @@ ipcMain.on('start-camera', (event, camera) => {
     mainWindow.webContents.send('camera-stopped', camera)
   });  
 });
+
+// IPC event handler to delete a subject
+ipcMain.handle('delete-subject', async (event, subject) => {
+  // Delete the subject from the database and delete its file
+  await deleteSubject(subject);
+  deleteSubjectFile(subject.name);
+});
+
+// Event handler for app activate event
 app.on('activate', () => {
   if (mainWindow === null) {
     createWindow();
