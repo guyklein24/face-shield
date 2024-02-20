@@ -1,20 +1,24 @@
-// src/components/CameraForm.js
 import React, { useState } from 'react';
 
 const CameraForm = ({ onAddCamera }) => {
   const [newCameraName, setNewCameraName] = useState('');
   const [newCameraStatus, setNewCameraStatus] = useState('');
+  const [rtspUrl, setRtspUrl] = useState('');
+  const [useDefaultCamera, setUseDefaultCamera] = useState(true);
 
   const handleAddCamera = () => {
     const newCamera = {
       name: newCameraName,
-      isEnabled: true, // Set default value or retrieve from a form input
-      status: 'Active', // Set default value or retrieve from a form input
+      isEnabled: false,
+      status: newCameraStatus,
+      rtspUrl: useDefaultCamera ? '' : rtspUrl // Use rtspUrl if not using default camera
     };
 
     onAddCamera(newCamera);
     setNewCameraName('');
     setNewCameraStatus('');
+    setRtspUrl('');
+    setUseDefaultCamera(true);
   };
 
   return (
@@ -29,11 +33,20 @@ const CameraForm = ({ onAddCamera }) => {
         />
       </div>
       <div>
-        <label>Status:</label>
+        <input
+          type="checkbox"
+          checked={useDefaultCamera}
+          onChange={(e) => setUseDefaultCamera(e.target.checked)}
+        />
+        <label>Use device default camera</label>
+      </div>
+      <div>
+        <label>RTSP URL:</label>
         <input
           type="text"
-          value={newCameraStatus}
-          onChange={(e) => setNewCameraStatus(e.target.value)}
+          value={rtspUrl}
+          onChange={(e) => setRtspUrl(e.target.value)}
+          disabled={useDefaultCamera}
         />
       </div>
       <button onClick={handleAddCamera}>Add Camera</button>
