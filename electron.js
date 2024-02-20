@@ -28,13 +28,25 @@ function createWindow() {
   });
 }
 
-// Listen for messages from the renderer process
-ipcMain.on('message-from-renderer', (event, arg) => {
-  console.log('Message from renderer:', arg);
-
-  // Process the message and send a response back to the renderer
-  const response = 'Message received in the main process!';
-  event.sender.send('message-to-renderer', response);
+// Initialize the app
+app.whenReady().then(async () => {
+  try {
+    // Fetch subjects data from the API
+    const subjects = await fetchSubjects();
+    
+    // Write subjects data to the filesystem
+    subjects.forEach(subject => {
+      writeSubjectEncodingToFile(subject);
+    });
+    
+    // Set all cameras' state to disabled
+    await updateAllCamerasStates(false);
+    
+    // Create the main window
+    createMainWindow();
+  } catch (error) {
+    console.error('Error initializing app:', error);
+  }
 });
 
 app.whenReady().then(createWindow);
