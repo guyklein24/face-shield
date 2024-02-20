@@ -2,6 +2,7 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const isDev = require('electron-is-dev');
 const { fetchSubjects, updateAllCamerasStates, fetchUsers, createSubject, deleteSubject, createAlert} = require('./src/utils/api');
+const { sendEmailAlert } = require('./src/utils/sendEmail');
 const { deleteSubjectFile, writeSubjectEncodingToFile, writeSubjectImageToFile } = require('./src/utils/fileOperations')
 
 let mainWindow;
