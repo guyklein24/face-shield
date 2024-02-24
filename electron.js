@@ -92,7 +92,7 @@ ipcMain.handle('add-subject', async (event, newSubject) => {
           });
 
           // Write subject encoding data to file
-          writeSubjectEncoding(createdSubject);
+          writeSubjectEncodingToFile(createdSubject);
           
           console.log('Subject created:', createdSubject);
           
@@ -118,8 +118,9 @@ ipcMain.handle('add-subject', async (event, newSubject) => {
 
 
 // IPC event handler to upload an image
-ipcMain.handle('upload-image', async (event, base64image, subjectName) => {
-  await writeSubjectImageToFile(base64image, subjectName);
+gipcMain.handle('upload-image', async (event, base64image, subjectName) => {
+  const imagePath = await writeSubjectImageToFile(base64image, subjectName);
+  return imagePath;
 });
 
 // IPC event handler to start a camera
