@@ -130,8 +130,10 @@ ipcMain.on('start-camera', (event, camera) => {
     const users = await fetchUsers();
     const recipients = users.filter(user => user.subscribeAlerts).map(user => user.email);
 
-    // Send email when alert is received
-    sendEmailAlert(alert, recipients);
+    if (recipients.length > 0) {
+      // Send email when alert is received
+      sendEmailAlert(alert, recipients);
+    }
 
     // Create alert in the API
     await createAlert(alert)
