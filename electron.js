@@ -123,6 +123,9 @@ gipcMain.handle('upload-image', async (event, base64image, subjectName) => {
   return imagePath;
 });
 
+// Define an object to store started cameras and their corresponding Python processes
+const startedCameras = {};
+
 // IPC event handler to start a camera
 ipcMain.on('start-camera', (event, camera) => {
   // Process the new camera data as needed
@@ -134,7 +137,11 @@ ipcMain.on('start-camera', (event, camera) => {
     pythonArgs.push('--rtsp-url', camera.rtspUrl);
   }
   
-  const pythonProcess = spawn('python3', pythonArgs);
+ // Execute the Python script
+  const pythonProcess = execFile('python3', pythonArgs);
+
+  // Store the Python process object in the map
+  startedCameras[camera.name] = pythonProcess;
 
   // Event listeners for Python process
   pythonProcess.stdout.on('data', async function(data) {
@@ -155,16 +162,28 @@ ipcMain.on('start-camera', (event, camera) => {
 
   pythonProcess.on('error', function (err) {
     console.error('Error executing Python script:', err);
+    delete startedCameras[camera.name]; // Remove the camera from the map when its process exits
   });
   
   pythonProcess.on('exit', function (code) {
-    if (code == 1) {
-      pythonProcess.stderr.on('data', data => {
-        console.log(data.toString);
-      })
-    }
-    mainWindow.webContents.send('camera-stopped', camera)
+    console.error('Python script exited with code:', code);
+    delete startedCameras[camera.name]; // Remove the camera from the map when its process exits
+    mainWindow.webContents.send('camera-stopped', camera);    
   });  
+});
+
+// IPC event handler to stop a camera
+ipcMain.handle('stop-camera', async (event, cameraName) => {
+  // Check if the camera is currently running
+  if (startedCameras[cameraName]) {
+    // Kill the Python process associated with the camera name
+    startedCameras[cameraName].kill();
+    console.log(`Stopped camera: ${cameraName}`);
+    return true; // Return true to indicate success
+  } else {
+    console.log(`Camera ${cameraName} is not running`);
+    return false; // Return false to indicate the camera was not running
+  }
 });
 
 // IPC event handler to delete a subject

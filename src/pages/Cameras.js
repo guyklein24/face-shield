@@ -99,6 +99,15 @@ const Cameras = () => {
     }
   };
 
+  const handleStopCamera = async (camera) => {
+    try {
+      await updateCameraState(camera.id, false); // Update camera state to disabled
+      await window.api.stopCamera(camera.name); // Call IPC to stop the camera
+    } catch (error) {
+      console.error('Error stopping camera:', error);
+    }
+  };
+
   const handleConfirmDelete = async () => {
     try {
       await handleDeleteCamera(cameraToDelete.id);
@@ -137,6 +146,9 @@ const Cameras = () => {
               <td>{camera.isEnabled ? 'Yes' : 'No'}</td>
               <td>{camera.status}</td>
               <td>
+                {camera.isEnabled && (
+                  <button onClick={() => handleStopCamera(camera)}>Stop</button>
+                )}
                 {!camera.isEnabled && (
                   <button onClick={() => handleStartCamera(camera)}>Start</button>
                 )}

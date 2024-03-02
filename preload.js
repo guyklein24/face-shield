@@ -6,5 +6,6 @@ contextBridge.exposeInMainWorld('api', {
   onCameraStopped: (callback) => ipcRenderer.on("camera-stopped", (_event, camera) => callback(camera)),
   addSubject: (newSubject) => ipcRenderer.invoke('add-subject', newSubject),
   uploadImage: (base64image, subjectName) => ipcRenderer.invoke('upload-image', base64image, subjectName),
-  deleteSubject: (subject) => ipcRenderer.invoke('delete-subject', subject)
+  deleteSubject: (subject) => ipcRenderer.invoke('delete-subject', subject),
+  stopCamera: (cameraName) => ipcRenderer.invoke('stop-camera', cameraName)
 });
