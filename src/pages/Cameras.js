@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import CameraForm from '../components/CameraForm';
 import ConfirmationDialog from '../components/ConfirmationDialog';
+import config from '../config';
 
 const Cameras = () => {
   const [cameras, setCameras] = useState([]);
@@ -17,7 +18,7 @@ const Cameras = () => {
   const updateCameraState = async (cameraId, isEnabled) => {
     try {
       // Make an API call to update camera state
-      const response = await fetch(`http://localhost:3000/cameras/${cameraId}`, {
+      const response = await fetch(`${config.apiUrl}/cameras/${cameraId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -43,7 +44,7 @@ const Cameras = () => {
 
   const fetchCameras = async () => {
     try {
-      const response = await fetch('http://localhost:3000/cameras');
+      const response = await fetch(`${config.apiUrl}/cameras`);
       const cameras = await response.json();
       setCameras(cameras);
     } catch (error) {
@@ -53,7 +54,7 @@ const Cameras = () => {
 
   const handleAddCamera = async (newCamera) => {
     try {
-      const response = await fetch('http://localhost:3000/cameras', {
+      const response = await fetch(`${config.apiUrl}/cameras`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -84,7 +85,7 @@ const Cameras = () => {
 
   const handleDeleteCamera = async (cameraId) => {
     try {
-      const response = await fetch(`http://localhost:3000/cameras/${cameraId}`, {
+      const response = await fetch(`${config.apiUrl}/cameras/${cameraId}`, {
         method: 'DELETE',
       });
 

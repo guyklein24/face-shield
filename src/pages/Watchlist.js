@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import SubjectForm from '../components/SubjectForm';
 import ConfirmationDialog from '../components/ConfirmationDialog';
+import config from '../config';
 
 const Watchlist = () => {
   const [subjects, setSubjects] = useState([]);
@@ -13,7 +14,7 @@ const Watchlist = () => {
 
   const fetchSubjects = async () => {
     try {
-      const response = await fetch('http://localhost:3000/subjects');
+      const response = await fetch(`${config.apiUrl}/subjects`);
       if (!response.ok) {
         throw new Error('Failed to fetch subjects');
       }

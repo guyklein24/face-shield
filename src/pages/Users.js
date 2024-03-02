@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import UserForm from '../components/UsersForm';
 import ConfirmationDialog from '../components/ConfirmationDialog';
-
+import config from '../config';
 
 const Users = () => {
   const [users, setUsers] = useState([]);
@@ -14,7 +14,7 @@ const Users = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch('http://localhost:3000/users');
+      const response = await fetch(`${config.apiUrl}/users`);
       const data = await response.json();
       setUsers(data);
     } catch (error) {
@@ -24,7 +24,7 @@ const Users = () => {
 
   const handleAddUser = async (userData) => {
     try {
-      const response = await fetch('http://localhost:3000/users', {
+      const response = await fetch(`${config.apiUrl}/users`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -41,7 +41,7 @@ const Users = () => {
 
   const handleDeleteUser = async (userId) => {
     try {
-      await fetch(`http://localhost:3000/users/${userId}`, {
+      await fetch(`${config.apiUrl}/users/${userId}`, {
         method: 'DELETE',
       });
       setUsers(users.filter(user => user.id !== userId));
@@ -65,7 +65,7 @@ const Users = () => {
     <div>
       <h1>Users Page</h1>
       <button onClick={() => setShowForm(true)}>Add User</button>
-      {showForm && <UserForm onSubmit={handleAddUser} />}
+      {showForm && <UserForm onAddUser={handleAddUser} />}
       <table>
         <thead>
           <tr>

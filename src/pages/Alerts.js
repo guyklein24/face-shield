@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import config from '../config';
 
 const AlertPage = () => {
   const [alerts, setAlerts] = useState([]);
@@ -14,7 +15,7 @@ const AlertPage = () => {
 
   const fetchAlerts = async () => {
     try {
-      const response = await fetch('http://localhost:3000/alerts');
+      const response = await fetch(`${config.apiUrl}/alerts`);
       const data = await response.json();
       // Sort alerts by timestamp in descending order (from newest to oldest)
       data.sort((a, b) => b.timestamp - a.timestamp);
