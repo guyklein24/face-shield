@@ -1,60 +1,72 @@
 import React, { useState } from 'react';
 
-const UserForm = ({ onSubmit }) => {
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [subscribeAlerts, setSubscribeAlerts] = useState(false);
+const UserForm = ({ onAddUser }) => {
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    subscribeAlerts: false
+  });
   const [passwordError, setPasswordError] = useState('');
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (password !== confirmPassword) {
+  const handleChange = (event) => {
+    const { name, value, type, checked } = event.target;
+    setFormData(prevState => ({
+      ...prevState,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+  };
+
+  const handleAddUser = (event) => {
+    event.preventDefault();
+
+    if (formData.password !== formData.confirmPassword) {
       setPasswordError('Passwords do not match');
       return;
     }
+
     setPasswordError('');
-    onSubmit({ firstName, lastName, email, password, subscribeAlerts });
+    onAddUser(formData);
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleAddUser}>
       <div>
         <label>
           First Name:
-          <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
+          <input type="text" name="firstName" value={formData.firstName} onChange={handleChange} required />
         </label>
       </div>
       <div>
         <label>
           Last Name:
-          <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} required />
+          <input type="text" name="lastName" value={formData.lastName} onChange={handleChange} required />
         </label>
       </div>
       <div>
         <label>
           Email:
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          <input type="email" name="email" value={formData.email} onChange={handleChange} required />
         </label>
       </div>
       <div>
         <label>
           Password:
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+          <input type="password" name="password" value={formData.password} onChange={handleChange} required />
         </label>
       </div>
       <div>
         <label>
           Confirm Password:
-          <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
+          <input type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} required />
         </label>
       </div>
       {passwordError && <p style={{ color: 'red' }}>{passwordError}</p>}
       <div>
         <label>
-          <input type="checkbox" checked={subscribeAlerts} onChange={(e) => setSubscribeAlerts(e.target.checked)} />
+          <input type="checkbox" name="subscribeAlerts" checked={formData.subscribeAlerts} onChange={handleChange} />
           Subscribe Alerts
         </label>
       </div>

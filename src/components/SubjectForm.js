@@ -1,27 +1,32 @@
-// SubjectForm.js
-
 import React, { useState } from 'react';
 
 const SubjectForm = ({ onAddSubject }) => {
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [image, setImage] = useState(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    image: null
+  });
 
-  const handleImageChange = (event) => {
-    setImage(event.target.files[0]);
+  const handleChange = (event) => {
+    const { name, value, files } = event.target;
+    setFormData(prevState => ({
+      ...prevState,
+      [name]: files ? files[0] : value // If files exist, set the image, otherwise set the value
+    }));
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
-      const imagePath = await uploadImage(image, name);
+      const imagePath = await uploadImage(formData.image, formData.name);
   
       // Call onAddSubject function with new subject data and imagePath
-      onAddSubject({
-        name,
-        description,
+      await onAddSubject({
+        name: formData.name,
+        description: formData.description,
         imagePath,
       });
+
     } catch (error) {
       console.error('Error handling form submission:', error);
     }
@@ -48,21 +53,19 @@ const SubjectForm = ({ onAddSubject }) => {
     });
   };
   
-  
-
   return (
     <form onSubmit={handleSubmit}>
       <div>
         <label>Name:</label>
-        <input type="text" value={name} onChange={(e) => setName(e.target.value)} />
+        <input type="text" name="name" value={formData.name} onChange={handleChange} />
       </div>
       <div>
         <label>Description:</label>
-        <textarea value={description} onChange={(e) => setDescription(e.target.value)} />
+        <textarea name="description" value={formData.description} onChange={handleChange} />
       </div>
       <div>
         <label>Image:</label>
-        <input type="file" accept="image/*" onChange={handleImageChange} />
+        <input type="file" accept="image/*" name="image" onChange={handleChange} />
       </div>
       <button type="submit">Upload</button>
     </form>

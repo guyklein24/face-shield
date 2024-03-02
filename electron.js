@@ -4,6 +4,7 @@ const isDev = require('electron-is-dev');
 const { fetchSubjects, updateAllCamerasStates, fetchUsers, createSubject, deleteSubject, createAlert} = require('./src/utils/api');
 const { sendEmailAlert } = require('./src/utils/sendEmail');
 const { deleteSubjectFile, writeSubjectEncodingToFile, writeSubjectImageToFile } = require('./src/utils/fileOperations')
+const { execFileSync, execFile } = require('child_process');
 
 let mainWindow;
 
@@ -60,65 +61,39 @@ app.on('window-all-closed', () => {
 
 // IPC event handler to add a new subject
 ipcMain.handle('add-subject', async (event, newSubject) => {
-  return new Promise((resolve, reject) => {
-    let createdSubject;
+  try {
+    // Get the path to the Python script
+    const pythonScriptPath = path.join(__dirname, 'python', 'add_subject.py');
+    
+    // Execute the Python script synchronously
+    const output = execFileSync('python3', ['-u', pythonScriptPath, '--image-path', newSubject.imagePath]);
+    // const output = execFileSync('./add_subject', ['--image-path', newSubject.imagePath]);
 
-    try {
-      // Handle the script output and create a file
-      const spawn = require('child_process').spawn;
-      const pythonScriptPath = path.join(__dirname, 'python', 'add_subject.py');
-      const pythonArgs = ['-u', pythonScriptPath, '--image-path', newSubject.imagePath];
-      console.log('Python Args:', pythonArgs);
-      const pythonProcess = spawn('python3', pythonArgs);
 
-      let scriptOutput = '';
+    // Parse the script output to get subject name and encodings
+    const subjectEncoding = JSON.parse(output.toString());
 
-      // Listen for data from the Python script's stdout
-      pythonProcess.stdout.on('data', (data) => {
-        scriptOutput += data.toString();
-      });
+    // Create the subject
+    const createdSubject = await createSubject({
+      name: newSubject.name,
+      description: newSubject.description,
+      faceEncoding: subjectEncoding.encoding,
+    });
 
-      // Handle script exit
-      pythonProcess.on('close', async (code) => {
-        if (code === 0) {
-          // Parse the script output to get subject name and encodings
-          const subjectEncoding = JSON.parse(scriptOutput);
-
-          // Create the subject
-          createdSubject = await createSubject({
-            name: newSubject.name,
-            description: newSubject.description,
-            faceEncoding: subjectEncoding.encoding,
-          });
-
-          // Write subject encoding data to file
-          writeSubjectEncodingToFile(createdSubject);
-          
-          console.log('Subject created:', createdSubject);
-          
-          resolve(createdSubject); // Resolve the promise with the createdSubject
-        } else {
-          console.error('Python script execution failed with code:', code);
-          reject(new Error(`Python script execution failed with code: ${code}`));
-        }
-      });
-
-      // Handle errors
-      pythonProcess.on('error', (err) => {
-        console.error('Error executing Python script:', err);
-        reject(err);
-      });
-
-    } catch (error) {
-      console.error('Error adding subject:', error);
-      reject(error);
-    }
-  });
+    // Write subject encoding data to file
+    writeSubjectEncodingToFile(createdSubject);
+    
+    console.log('Subject created:', createdSubject);
+    
+    return createdSubject;
+  } catch (error) {
+    console.error('Error adding subject:', error);
+    throw error;
+  }
 });
 
-
 // IPC event handler to upload an image
-gipcMain.handle('upload-image', async (event, base64image, subjectName) => {
+ipcMain.handle('upload-image', async (event, base64image, subjectName) => {
   const imagePath = await writeSubjectImageToFile(base64image, subjectName);
   return imagePath;
 });
@@ -129,8 +104,10 @@ const startedCameras = {};
 // IPC event handler to start a camera
 ipcMain.on('start-camera', (event, camera) => {
   // Process the new camera data as needed
-  const spawn = require('child_process').spawn;
+  // const spawn = require('child_process').spawn;
   const pythonScriptPath = path.join(__dirname, 'python', 'start_camera.py');
+  
+  // const pythonArgs = ['--camera-name', camera.name];
   const pythonArgs = ['-u', pythonScriptPath, '--camera-name', camera.name];
 
   if (camera.rtspUrl) {
