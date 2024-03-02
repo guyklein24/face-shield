@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import ConfirmationDialog from '../components/ConfirmationDialog';
 import config from '../config';
 
 const AlertPage = () => {
   const [alerts, setAlerts] = useState([]);
+  const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
 
   useEffect(() => {
     fetchAlerts();
@@ -25,9 +27,28 @@ const AlertPage = () => {
     }
   };
 
+  const handleClearAlerts = () => {
+    setShowConfirmationDialog(true);
+  };
+
+  const confirmClearAlerts = async () => {
+    try {
+      // Perform clearing of alerts here
+      // Clear alerts state
+      setAlerts([]);
+      // Close the confirmation dialog
+      setShowConfirmationDialog(false);
+    } catch (error) {
+      console.error('Error clearing alerts:', error);
+    }
+  };
+
   return (
     <div>
       <h1>Alerts</h1>
+      <div style={{ marginBottom: '10px' }}>
+        <button onClick={handleClearAlerts}>Clear Alerts</button>
+      </div>
       <table>
         <thead>
           <tr>
@@ -46,6 +67,13 @@ const AlertPage = () => {
           ))}
         </tbody>
       </table>
+      {showConfirmationDialog && (
+        <ConfirmationDialog
+          message="Are you sure you want to clear all alerts?"
+          onConfirm={confirmClearAlerts}
+          onCancel={() => setShowConfirmationDialog(false)}
+        />
+      )}
     </div>
   );
 };
