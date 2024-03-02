@@ -4,6 +4,12 @@
   "private": true,
   "main": "electron.js",
   "dependencies": {
+    "@emotion/react": "^11.11.3",
+    "@emotion/styled": "^11.11.0",
+    "@mui/icons-material": "^5.15.11",
+    "@mui/material": "^5.15.11",
+    "@mui/styles": "^5.15.11",
+    "@mui/x-data-grid": "^6.19.5",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
@@ -20,7 +26,15 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "electron": "electron ."
+    "electron": "electron .",
+    "dist": "electron-builder"
+  },
+  "build": {
+    "productName": "Face Shield App",
+    "files": ["build/**/*", "node_modules/**/*"],
+    "directories": {
+      "output": "dist"
+    }
   },
   "eslintConfig": {
     "extends": [
