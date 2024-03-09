@@ -19,6 +19,8 @@ function createMainWindow() {
     },
   });
 
+  // mainWindow.webContents.openDevTools();
+
   mainWindow.loadURL(
     isDev
       ? 'http://localhost:8080' // Development server URL
@@ -126,7 +128,7 @@ ipcMain.on('start-camera', (event, camera) => {
 
     console.log('Received alert:', alert);
     mainWindow.webContents.send('send-alert', alert)
-
+    
     const users = await fetchUsers();
     const recipients = users.filter(user => user.subscribeAlerts).map(user => user.email);
 
@@ -147,7 +149,9 @@ ipcMain.on('start-camera', (event, camera) => {
   pythonProcess.on('exit', function (code) {
     console.error('Python script exited with code:', code);
     delete startedCameras[camera.name]; // Remove the camera from the map when its process exits
-    mainWindow.webContents.send('camera-stopped', camera);    
+    if (code != null) {
+      mainWindow.webContents.send('camera-stopped', camera);
+    }
   });  
 });
 
@@ -175,6 +179,6 @@ ipcMain.handle('delete-subject', async (event, subject) => {
 // Event handler for app activate event
 app.on('activate', () => {
   if (mainWindow === null) {
-    createWindow();
+    createMainWindow();
   }
 });

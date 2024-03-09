@@ -31,7 +31,10 @@
   },
   "build": {
     "productName": "Face Shield App",
-    "files": ["build/**/*", "node_modules/**/*"],
+    "files": [
+      "build/**/*",
+      "node_modules/**/*"
+    ],
     "directories": {
       "output": "dist"
     }

@@ -2,11 +2,23 @@ import React, { useState, useEffect } from 'react';
 import SubjectForm from '../components/SubjectForm';
 import ConfirmationDialog from '../components/ConfirmationDialog';
 import config from '../config';
+import Button from '@mui/material/Button';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import DeleteSharpIcon from '@mui/icons-material/DeleteSharp';
+import AlertSnackbar from '../components/AlertSnackbar';
+
+
 
 const Watchlist = () => {
   const [subjects, setSubjects] = useState([]);
   const [showSubjectForm, setShowForm] = useState(false);
   const [subjectToDelete, setSubjectToDelete] = useState(null);
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState(null);
 
   useEffect(() => {
     fetchSubjects();
@@ -27,36 +39,33 @@ const Watchlist = () => {
 
   const handleAddSubject = async (newSubject) => {
     try {
-      // Add the subject
-      console.log('New subject:', newSubject);
       const createdSubject = await window.api.addSubject(newSubject);
-      console.log(createdSubject)
-      // Update the subjects state with the new subject
       setSubjects([...subjects, createdSubject]);
-      setShowForm(false); // Hide the subject form
+      setShowForm(false);
+
       
+      setAlertMessage("Subeject was added successfully to watchlist");
+      setAlertOpen(true);
+
     } catch (error) {
       console.error('Error adding subject:', error);
     }
   };
 
-  const handleEditSubject = (subjectId) => {
-    // Send IPC command to edit subject with subjectId
-    window.api.editSubject(subjectId);
-  };
-
   const handleDeleteSubject = (subject) => {
-    // Send IPC command to delete subject with subjectId
-    setSubjectToDelete(subject)
+    setSubjectToDelete(subject);
   };
 
   const handleConfirmDelete = async () => {
     try {
       await window.api.deleteSubject(subjectToDelete);
-      // Filter out the deleted subject from the subjects array
       const updatedSubjects = subjects.filter(subject => subject.id !== subjectToDelete.id);
       setSubjects(updatedSubjects);
       setSubjectToDelete(null);
+
+      setAlertMessage("Subeject was successfully deleted");
+      setAlertOpen(true);
+
     } catch (error) {
       console.error('Error deleting subject:', error);
     }
@@ -64,34 +73,40 @@ const Watchlist = () => {
 
   return (
     <div>
-      <h1>Watchlist Page</h1>
-      <button onClick={() => setShowForm(true)}>Add New Subject</button>
-      {showSubjectForm && <SubjectForm onAddSubject={handleAddSubject} />}
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Description</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
+      <SubjectForm onAddSubject={handleAddSubject} />
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell style={{width: '10%'}} sx={{fontWeight: 'bold'}}>Name</TableCell>
+            <TableCell style={{width: '20%'}} sx={{fontWeight: 'bold'}}>Description</TableCell>
+            <TableCell style={{width: '20%'}} sx={{fontWeight: 'bold'}}>Actions</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
           {subjects.map((subject) => (
-            <tr key={subject.id}>
-              <td>{subject.id}</td>
-              <td>{subject.name}</td>
-              <td>{subject.description}</td>
-              <td>
-                <button onClick={() => handleEditSubject(subject.id)}>Edit</button>
-                <button onClick={() => handleDeleteSubject(subject)}>Delete</button>
-              </td>
-            </tr>
+            <TableRow key={subject.id}>
+              <TableCell>{subject.name}</TableCell>
+              <TableCell>{subject.description}</TableCell>
+              <TableCell>
+                <Button startIcon={<DeleteSharpIcon />} variant="outlined" color='secondary' onClick={() => handleDeleteSubject(subject)}>Delete</Button>
+              </TableCell>
+            </TableRow>
           ))}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
+
+      <AlertSnackbar
+        open={alertOpen}
+        title="Success"
+        onClose={() => setAlertOpen(false)}
+        severity="success"
+        message={alertMessage}
+      />
+
       {subjectToDelete && (
         <ConfirmationDialog
+          title="Delete Subject"
+          open={true}
           message={`Are you sure you want to delete the subject "${subjectToDelete.name}"?`}
           onConfirm={handleConfirmDelete}
           onCancel={() => setSubjectToDelete(null)}
